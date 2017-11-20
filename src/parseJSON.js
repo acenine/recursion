@@ -15,7 +15,7 @@ var parseJSON = function(json) {
 
   ///////////////////////////////////////////////////////////////////////////////////
   // --- helper functions
-
+  
   var discardWhitespace = function() {
     return strToParse.trim();
   }
@@ -118,7 +118,7 @@ var parseJSON = function(json) {
         return obj;
     }
 ////// else make pairs
-    var makePairs = function() {
+    var addPairs = function() {
 
       if (firstChar() === '"') { // key is a string
         
@@ -129,7 +129,7 @@ var parseJSON = function(json) {
           obj[objKey] = objVal;
           if (firstChar() === ',') {
             chop(1);
-            return makePairs();
+            return addPairs();
           }
           else if (firstChar() === '}') { // end of object
             chop(1);
@@ -146,17 +146,38 @@ var parseJSON = function(json) {
       else { //key not a string
         throw SyntaxError('Object key must be a string');
       }
-    } // end of makePair
+    } // end of addPairs
 
-    return makePairs();
+    return addPairs();
   }
 
 
   var makeArray = function() {
-    //var arr = [];
-    //return arr;
-    chop(2)
-    return []
+    var arr = [];
+    chop(1);
+
+    if (firstChar() === ']') { 
+        chop(1);
+        return arr;
+    }
+////// else add items
+    var addItems = function() {
+      var arrItem = determineValue();
+      arr.push(arrItem);
+      if (firstChar() === ',') { // more items to add
+        chop(1);
+        return addItems();
+      }
+      else if (firstChar() === ']') { //end of array
+        chop(1);
+        return arr;
+      }
+      else { //throw error
+        throw SyntaxError('Not a valid array -- missing ","');
+      }
+
+    } // end of addItems
+    return addItems();
   }
 
   var makeString = function() {
