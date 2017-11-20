@@ -9,6 +9,12 @@ var parseJSON = function(json) {
   var strToParse = json.slice();
 
   //var funcToUse = arguments[1];
+  ///////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////////
+  // --- helper functions
 
   var discardWhitespace = function() {
     return strToParse.trim();
@@ -22,43 +28,33 @@ var parseJSON = function(json) {
     strToParse = discardWhitespace();
     var firstChar = strToParse[0]; 
     if (firstChar === undefined) {
-      throw SyntaxError("Nothing to parse")
+      throw SyntaxError('Nothing to parse')
     }
     else {
       return firstChar; 
     }
 
   }
-  var makeString = function() {
-    var str = '';
-    return str;
-  }
-  var makeObject = function() {
-    var obj = {};
-    return obj;
-  }
-  var makeArray = function() {
-    var arr = [];
-    return arr;
-  }
-  var makeNumber = function() {
 
+  var chop = function(num) { //takes off num many chars from the start of strToParse
+    strToParse = strToParse.slice(num);
+    return;
   }
-  var makeTrue = function() {
 
-      strToParse = strToParse.slice(4);
-      return true;
+  var skim = function(num) {
+    return strToParse.substr(0, num)
   }
-  var makeFalse = function() {
 
-      strToParse = strToParse.slice(5);
-      return false;
+  var skimOff = function(num) {
+    var chunk = skim(num);
+    chop(num);
+    return chunk;
   }
-  var makeNull = function() {
 
-      strToParse = strToParse.slice(4);
-      return null;
-  }
+
+  ///////////////////////////////////////////////////////////////////////////////////
+  // --- recursive function 
+
   // recurse on determine, not full func
   // the full function needs to keep the first (outer most) value 
 
@@ -71,15 +67,15 @@ var parseJSON = function(json) {
     var first = firstChar();
 
 
-    if (strToParse.substr(0, 4) === 'null') { //first char is n
+    if (skim(4) === 'null') { //first char is n
       // pass to makeNull
       value = makeNull();
     }
-    else if (strToParse.substr(0, 4) === 'true') { //first char is t
+    else if (skim(4) === 'true') { //first char is t
       //pass to makeTrue
       value = makeTrue();
     }
-    else if (strToParse.substr(0, 5) === 'false') { //first char is f
+    else if (skim(5) === 'false') { //first char is f
       //pass to makeFalse
       value = makeFalse();
     }
@@ -100,12 +96,105 @@ var parseJSON = function(json) {
       value = makeNumber();
     }
     else {
-      throw SyntaxError("Not a valid value")
+      throw SyntaxError('Not a valid value')
     }
 
-    return value;
 
+    return value;
+  } // ends determine
+
+
+
+  ///////////////////////////////////////////////////////////////////////////////////
+  // --- maker functions
+
+  var makeObject = function() {
+    var obj = {};
+    chop(1);
+
+    
+    if (firstChar() === '}') { 
+        chop(1);
+        return obj;
+    }
+////// else make pairs
+    var makePairs = function() {
+
+      if (firstChar() === '"') { // key is a string
+        
+        var objKey = determineValue(); 
+        if (firstChar() === ':') {
+          chop(1); 
+          var objVal = determineValue();
+          obj[objKey] = objVal;
+          if (firstChar() === ',') {
+            chop(1);
+            return makePairs();
+          }
+          else if (firstChar() === '}') { // end of object
+            chop(1);
+            return obj;
+          }
+          else {
+            throw SyntaxError('Not a valid object -- missing "," ');
+          }
+        } 
+        else{
+          throw SyntaxError('Not a valid object -- missing ":" ');
+        }
+      } 
+      else { //key not a string
+        throw SyntaxError('Object key must be a string');
+      }
+    } // end of makePair
+
+    return makePairs();
   }
+
+
+  var makeArray = function() {
+    //var arr = [];
+    //return arr;
+    chop(2)
+    return []
+  }
+
+  var makeString = function() {
+    //var str = '';
+    //return str;
+    chop(3)
+    return "string"
+  }
+
+  var makeNumber = function() {
+    chop(1)
+    return 0
+  }
+
+
+  var makeTrue = function() {
+    chop(4);
+    return true;
+  }
+
+
+  var makeFalse = function() {
+    chop(5);
+    return false;
+  }
+
+
+  var makeNull = function() {
+    chop(4);
+    return null;
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////////
+
   //check first char
   // { - object check for }
   // [ - array check for ]
@@ -125,6 +214,7 @@ var parseJSON = function(json) {
   //self determines first char and passes string into proper function 
   //if the end of the string is reached (passed in string is empty, return result
 
+  ///////////////////////////////////////////////////////////////////////////////////
 
   result = determineValue();
 
@@ -132,7 +222,7 @@ var parseJSON = function(json) {
     return result;
   }
   else {
-    throw SyntaxError("Unexpected ending");
+    throw SyntaxError('Unexpected ending');
   }
 };
 
