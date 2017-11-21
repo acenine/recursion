@@ -26,7 +26,7 @@ var parseJSON = function(json) {
     //   if none throw error
     //   else return char
     strToParse = discardWhitespace();
-    var firstChar = strToParse[0]; 
+    var firstChar = skim(1); 
     if (firstChar === undefined) {
       throw SyntaxError('Nothing to parse')
     }
@@ -41,7 +41,7 @@ var parseJSON = function(json) {
     return;
   }
 
-  var skim = function(num) {
+  var skim = function(num) { // returns the first num many chars of strToParse in a string
     return strToParse.substr(0, num)
   }
 
@@ -50,7 +50,11 @@ var parseJSON = function(json) {
     chop(num);
     return chunk;
   }
-
+  var nextIsNumberPart = function() { //returns boolean
+    var next = skim(1);
+    var numberParts = '0123456789-+eE.';
+    return numberParts.includes(next);
+  } 
 
   ///////////////////////////////////////////////////////////////////////////////////
   // --- recursive function 
@@ -127,6 +131,7 @@ var parseJSON = function(json) {
           chop(1); 
           var objVal = determineValue();
           obj[objKey] = objVal;
+          console.log(obj)
           if (firstChar() === ',') {
             chop(1);
             return addPairs();
@@ -164,6 +169,7 @@ var parseJSON = function(json) {
     var addItems = function() {
       var arrItem = determineValue();
       arr.push(arrItem);
+      console.log(arr)
       if (firstChar() === ',') { // more items to add
         chop(1);
         return addItems();
@@ -181,15 +187,74 @@ var parseJSON = function(json) {
   }
 
   var makeString = function() {
-    //var str = '';
-    //return str;
-    chop(3)
-    return "string"
+/*    
+    var str = '';
+    chop(1);
+    if (firstChar() === '"') { 
+        chop(1);
+        return str;
+////// else add characters
+    var addChars = function() {  ///////////// ****** ---> still need to write this <--- ****** \\\\\\\\\\\\\\\
+    } // end of addChars
+    return addChars();
+    }
+*/  chop(3)
+    return 'string';
   }
 
   var makeNumber = function() {
-    chop(1)
-    return 0
+/*
+    // check for neg
+    //   if no num after -, error
+    //   else its a number
+    //     add digits=s
+    // if not neg, then it must a number
+    //   if num is 0
+    //     if next is decimal, create decimal,
+    //     else return 0
+    //       if decimal, next must be num or error
+    //         if all nums after decimal are 0, return 0
+    // 
+
+    // add digit until decimal then add decimal
+    // both go until e then take remaining number and transform in e func
+    var negative = false;
+    var decimal  = false;
+    var e        = false;
+
+    ePos = ['e', 'E', 'e+', 'E+']
+    eNeg = ['e-', 'E-']
+    // presence of e triggers moveDecimal
+    // moveDecimal 
+    //   chops first (e)
+    //   check next
+    //     if '-' move left
+    //       check next is number
+    //     if '+' move right
+    //       check next is number
+    //     if number move right
+    //     (if no decimal, start at end of number)
+    //     else error
+    //   
+
+    // first construct number then see if its valid
+
+    var num = '';
+    var first = skimOff();
+    if (first === '-') {
+      negative = true;
+    }
+*/
+  
+    var num = '';
+    while (nextIsNumberPart() && strToParse.length>0) {
+      num = num.concat(skimOff(1));
+    }
+    num = Number(num);
+    if (num === NaN) {
+      throw SyntaxError('Not a valid number');
+    }
+    return num;
   }
 
 
