@@ -15,7 +15,7 @@ var parseJSON = function(json) {
 
   ///////////////////////////////////////////////////////////////////////////////////
   // --- helper functions
-  
+
   var discardWhitespace = function() {
     return strToParse.trim();
   }
@@ -37,6 +37,9 @@ var parseJSON = function(json) {
   }
 
   var chop = function(num) { //takes off num many chars from the start of strToParse
+    if (strToParse.length === 0) {
+      throw SyntaxError('String ended unexpectedly')
+    }
     strToParse = strToParse.slice(num);
     return;
   }
@@ -52,9 +55,13 @@ var parseJSON = function(json) {
   }
   var nextIsNumberPart = function() { //returns boolean
     var next = skim(1);
-    var numberParts = '0123456789-+eE.';
-    return numberParts.includes(next);
+    return numberParts.includes(next) || digits.includes(next);
   } 
+
+  var digits = '0123456789';
+  var numberParts = '-+eE.';
+  var specialChars = 'bfnrt/"';
+
 
   ///////////////////////////////////////////////////////////////////////////////////
   // --- recursive function 
@@ -131,7 +138,6 @@ var parseJSON = function(json) {
           chop(1); 
           var objVal = determineValue();
           obj[objKey] = objVal;
-          console.log(obj)
           if (firstChar() === ',') {
             chop(1);
             return addPairs();
@@ -169,7 +175,6 @@ var parseJSON = function(json) {
     var addItems = function() {
       var arrItem = determineValue();
       arr.push(arrItem);
-      console.log(arr)
       if (firstChar() === ',') { // more items to add
         chop(1);
         return addItems();
@@ -187,19 +192,54 @@ var parseJSON = function(json) {
   }
 
   var makeString = function() {
-/*    
+
     var str = '';
     chop(1);
-    if (firstChar() === '"') { 
+    /*if (skim(1) === '"') { // cant use firstChar in string because whitespace is important
         chop(1);
-        return str;
+        return str;*/
 ////// else add characters
     var addChars = function() {  ///////////// ****** ---> still need to write this <--- ****** \\\\\\\\\\\\\\\
-    } // end of addChars
+      var char = skimOff(1);
+
+      if (char === '"') {
+        return str;
+      }
+      else if (char === '\\') { // escape stuff - might also be a recursive function
+        // we have hit a \
+        // if the next is a \ too, keep 
+        var next = skimOff(1);
+        if (next === '\\') { //double back slash means next char should be special
+          str += '\\'; 
+          if (specialChars.includes(skim(1))) {
+            str += skimOff(1); 
+          }
+          return addChars();
+        }
+        else if (next === 'u') { //check for unicode
+          var hex = skimOff(4);
+          var isHex = hex.split('').every(function(item) {
+            return digits.includes(item);
+          });
+          if (isHex) { // followed by 4 digits
+            str += '\\u' + hex;
+            return addChars();
+          }
+          else { // else throw error
+            throw SyntaxError('Not a valid unicode')
+          }
+        }
+        else { // next is not special - just return char
+          str += next; 
+          return addChars(); 
+        }
+      }
+      else {
+        str += char;
+        return addChars();
+      }
+    } // end of addChars*/
     return addChars();
-    }
-*/  chop(3)
-    return 'string';
   }
 
   var makeNumber = function() {
