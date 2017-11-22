@@ -5,10 +5,8 @@
 var parseJSON = function(json) {
   // your code goes here
   var result;
-  var doneParsing = false;
   var strToParse = json.slice();
 
-  //var funcToUse = arguments[1];
   ///////////////////////////////////////////////////////////////////////////////////
 
   ///////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +71,6 @@ var parseJSON = function(json) {
     // get firstChar
     // if it matches one these cases, pass string to that function
     // else throw error
-    // if var is undefined, it is the outermost function
     var value; 
     var first = firstChar();
 
@@ -195,19 +192,14 @@ var parseJSON = function(json) {
 
     var str = '';
     chop(1);
-    /*if (skim(1) === '"') { // cant use firstChar in string because whitespace is important
-        chop(1);
-        return str;*/
 ////// else add characters
-    var addChars = function() {  ///////////// ****** ---> still need to write this <--- ****** \\\\\\\\\\\\\\\
+    var addChars = function() {  
       var char = skimOff(1);
 
       if (char === '"') {
         return str;
       }
-      else if (char === '\\') { // escape stuff - might also be a recursive function
-        // we have hit a \
-        // if the next is a \ too, keep 
+      else if (char === '\\') { // escape stuff 
         var next = skimOff(1);
         if (next === '\\') { //double back slash means next char should be special
           str += '\\'; 
@@ -243,51 +235,8 @@ var parseJSON = function(json) {
   }
 
   var makeNumber = function() {
-/*
-    // check for neg
-    //   if no num after -, error
-    //   else its a number
-    //     add digits=s
-    // if not neg, then it must a number
-    //   if num is 0
-    //     if next is decimal, create decimal,
-    //     else return 0
-    //       if decimal, next must be num or error
-    //         if all nums after decimal are 0, return 0
-    // 
-
-    // add digit until decimal then add decimal
-    // both go until e then take remaining number and transform in e func
-    var negative = false;
-    var decimal  = false;
-    var e        = false;
-
-    ePos = ['e', 'E', 'e+', 'E+']
-    eNeg = ['e-', 'E-']
-    // presence of e triggers moveDecimal
-    // moveDecimal 
-    //   chops first (e)
-    //   check next
-    //     if '-' move left
-    //       check next is number
-    //     if '+' move right
-    //       check next is number
-    //     if number move right
-    //     (if no decimal, start at end of number)
-    //     else error
-    //   
-
-    // first construct number then see if its valid
-
     var num = '';
-    var first = skimOff();
-    if (first === '-') {
-      negative = true;
-    }
-*/
-  
-    var num = '';
-    while (nextIsNumberPart() && strToParse.length>0) {
+    while (nextIsNumberPart() && strToParse.length > 0) {
       num = num.concat(skimOff(1));
     }
     num = Number(num);
